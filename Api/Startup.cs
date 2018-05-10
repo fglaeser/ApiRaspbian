@@ -1,4 +1,5 @@
 ﻿using ApiRaspbian.Tasks;
+using Infra.Data;
 using Infra.Full.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,8 @@ namespace ApiRaspbian
     {
       builder.ConfigureServices((ctx, c) => {
         c.AddSingleton<ITaskObject, Reading>();
-        //c.Configure<DataAccessRegistryOptions>(ctx.Configuration.GetSection("DataAccessRegistry"));
+        c.AddSingleton<IDataAccessRegistry, DataAccessRegistry>();
+        c.Configure<DataAccessRegistryOptions>(ctx.Configuration.GetSection("DataAccessRegistry"));
       });
     }
   }

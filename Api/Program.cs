@@ -1,5 +1,6 @@
 ﻿using Infra.Full.Configuration;
 using Infra.WebHost;
+using System;
 
 namespace apiraspbian
 {
@@ -15,7 +16,7 @@ namespace apiraspbian
 
     public static void Main(string[] args)
     {
-      //Environment.SetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", Environment.GetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES") + ";ApiRaspbian");
+      Environment.SetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", Environment.GetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES") + ";ApiRaspbian");
       WebHostWrapper.Run(args, new Program());
     }
 

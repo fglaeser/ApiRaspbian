@@ -60,7 +60,7 @@ namespace ApiRaspbian.Tasks
 
     private float GetTemperatureFromFile(string filePath)
     {
-      if (!File.Exists(filePath)) return 0;
+      if (!File.Exists(filePath)) return 0.0f;
       var lines = File.ReadAllLines(filePath);
       var secondLine = lines[1];
       var temperatureData = secondLine.Split(" ")[9];

@@ -7,14 +7,8 @@
 		<script src="@Path['~/content/amcharts/amcharts.js'];" type="text/javascript"></script> 
 		<script type="text/javascript">
 			
-      var lineChartData2 = [
-        { date: calcTime('2018-05-21', 2), temp1: 21, temp2: 23 },
-        { date: calcTime('2018-05-22', 2), temp1: 21, temp2: 23 },
-        { date: calcTime('2018-05-23', 2), temp1: 21, temp2: 23 },
-        { date: calcTime('2018-05-24', 2), temp1: 21, temp2: 23 }
-      ];
       var lineChartData = [
-      @Each.Model
+      @Each.Model.Temps
       {
         date : new Date('@Current.Timestamp'),
         temp1: '@Current.Inside'.replace(',', '.'),
@@ -123,7 +117,7 @@
 					  <div class="dene">
 						<div class="denem">
 						  <div class="deneme">
-							  20<span>.5</span><strong>&deg;</strong>
+							  @Model.InsideInt<span>.@Model.InsideRest</span><strong>&deg;</strong>
 						  </div>
 						</div>
 					  </div>
@@ -134,7 +128,7 @@
 					  <div class="dene">
 						<div class="denem">
 						  <div class="deneme">
-							  24<span>.3</span><strong>&deg;</strong>
+							  @Model.OutsideInt<span>.@Model.OutsideRest</span><strong>&deg;</strong>
 						  </div>
 						</div>
 					  </div>

@@ -46,8 +46,8 @@ namespace ApiRaspbian.Tasks
       var tempOut = GetTemperatureFromFile(Path.Combine(_settings.PollingSensorsPath, _settings.SensorOutsideId, _settings.PollingTemperatureFile));
       DataAccess.Insert(new Temperature
       {
-        Inside = 23.566556677777f,//tempIn,
-        Outside = 0,//tempOut,
+        Inside = tempIn,
+        Outside = tempOut,
         Timestamp = DateTime.Now
       });
       _logger.LogInformation($"Temp IN : {tempIn} , Temp OUT {tempOut}");

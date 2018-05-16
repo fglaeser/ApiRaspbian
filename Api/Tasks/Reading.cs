@@ -18,6 +18,8 @@ namespace ApiRaspbian.Tasks
     public IDataAccess DataAccess => _dataAccessRegistry.GetDataAccess();
     public TimeSpan? WaitTimeout => null;
 
+    public string TaskName => throw new NotImplementedException();
+
     private Settings _settings;
 
     public Reading(ILogger<Reading> logger, IDataAccessRegistry dataAccessRegistry)

@@ -1,4 +1,5 @@
-﻿using ApiRaspbian.Model;
+﻿using ApiRaspbian.Mgmt;
+using ApiRaspbian.Model;
 using Infra.Data;
 using Infra.Full.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,33 +16,37 @@ namespace ApiRaspbian.Tasks
   {
     ILogger<Reading> _logger;
     IDataAccessRegistry _dataAccessRegistry;
+    SettingsManagement _settingsMgmt;
     public IDataAccess DataAccess => _dataAccessRegistry.GetDataAccess();
     public TimeSpan? WaitTimeout => null;
 
+    public string TaskName => GetType().Name;
+
     private Settings _settings;
 
-    public Reading(ILogger<Reading> logger, IDataAccessRegistry dataAccessRegistry)
+    public Reading(ILogger<Reading> logger, IDataAccessRegistry dataAccessRegistry, SettingsManagement settingsMgmt)
     {
       _logger = logger;
       _dataAccessRegistry = dataAccessRegistry;
+      _settingsMgmt = settingsMgmt;
     }
 
-    public Task StartAsync(CancellationToken token)
+    public async Task StartAsync(CancellationToken token)
     {
       while (!token.IsCancellationRequested)
       {
         StoreTemperature();
-        token.WaitHandle.WaitOne(TimeSpan.FromMinutes(_settings.PollingInterval));
+        await Task.Delay(TimeSpan.FromMinutes(_settings.PollingInterval), token).ConfigureAwait(false);
       }
 
-      return Task.CompletedTask;
+      return;
       //ID Sensor/28-000008e36946
                 //28-000008e28be0
     }
 
     private void StoreTemperature()
     {
-      LoadSetting();
+      _settings = _settingsMgmt.GetSettings();
       var tempIn = GetTemperatureFromFile(Path.Combine(_settings.PollingSensorsPath, _settings.SensorInsideId, _settings.PollingTemperatureFile));
       var tempOut = GetTemperatureFromFile(Path.Combine(_settings.PollingSensorsPath, _settings.SensorOutsideId, _settings.PollingTemperatureFile));
       DataAccess.Insert(new Temperature
@@ -52,12 +57,6 @@ namespace ApiRaspbian.Tasks
       });
       _logger.LogInformation($"Temp IN : {tempIn} , Temp OUT {tempOut}");
     }
-
-    private void LoadSetting()
-    {
-      _settings = DataAccess.Get<Settings>("main");
-    }
-
     private float GetTemperatureFromFile(string filePath)
     {
       if (!File.Exists(filePath)) return 0.0f;

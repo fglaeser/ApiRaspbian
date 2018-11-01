@@ -1,4 +1,5 @@
-﻿using ApiRaspbian.Model;
+﻿using ApiRaspbian.Mgmt;
+using ApiRaspbian.Model;
 using ApiRaspbian.Requests;
 using Infra.Data;
 using Nancy;
@@ -8,36 +9,42 @@ namespace ApiRaspbian.Modules
 {
   public class SettingsModule : Nancy.NancyModule
   {
-    IDataAccessRegistry _dataAccessRegistry;
-    public IDataAccess DataAccess => _dataAccessRegistry.GetDataAccess();
+    readonly SettingsManagement _settingsMgmt;
 
-    public SettingsModule(IDataAccessRegistry dataAccessRegistry): base("/api/_settings")
+    public SettingsModule(SettingsManagement settingsMgmt): base("/api/_settings")
     {
-      _dataAccessRegistry = dataAccessRegistry;
-
+      _settingsMgmt = settingsMgmt;
       Get("/", (p) => 
       {
-        var settings = DataAccess.Get<Settings>("main");
+        var settings = _settingsMgmt.GetSettings();
         return Negotiate.WithModel(new SettingsRequest
         {
           PollingInterval = settings.PollingInterval,
           PollingSensorsPath = settings.PollingSensorsPath, 
           PollingTemperatureFile = settings.PollingTemperatureFile,
           SensorInsideId = settings.SensorInsideId,
-          SensorOutsideId = settings.SensorOutsideId
+          SensorOutsideId = settings.SensorOutsideId, 
+          TargetTemperature = settings.TargetTemperature, 
+          PinCool = settings.PinCool,
+          PinHeat = settings.PinHeat,
+          Diff = settings.Diff
         });
       });
 
       Put("/", (p) =>
       {
         var req = this.Bind<SettingsRequest>();
-        var settings = DataAccess.Get<Settings>("main");
+        var settings = _settingsMgmt.GetSettings();
         settings.PollingInterval = req.PollingInterval == default(int) ? settings.PollingInterval : req.PollingInterval;
         settings.PollingSensorsPath = req.PollingSensorsPath ?? settings.PollingSensorsPath;
         settings.PollingTemperatureFile = req.PollingTemperatureFile ?? settings.PollingTemperatureFile;
         settings.SensorInsideId = req.SensorInsideId ?? settings.SensorInsideId;
         settings.SensorOutsideId = req.SensorOutsideId ?? settings.SensorOutsideId;
-        DataAccess.Update(settings);
+        settings.TargetTemperature = req.TargetTemperature == default(float) ? settings.TargetTemperature : req.TargetTemperature;
+        settings.PinCool = req.PinCool == default(int) ? settings.PinCool : req.PinCool;
+        settings.PinHeat = req.PinHeat == default(int) ? settings.PinHeat : req.PinHeat;
+        settings.Diff = req.Diff == default(float) ? settings.Diff : req.Diff;
+        settingsMgmt.UpdateSettings(settings);
         return Negotiate.WithStatusCode(HttpStatusCode.OK);
       });
     }

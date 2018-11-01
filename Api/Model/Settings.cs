@@ -17,5 +17,16 @@ namespace ApiRaspbian.Model
     public string SensorInsideId { get; set; }
 
     public string SensorOutsideId { get; set; }
+
+    #region Thermostat
+
+    public float TargetTemperature { get; set; }
+
+    public int PinCool { get; set; }
+    
+    public int PinHeat { get; set; }
+
+    public float Diff { get; set; }
+    #endregion
   }
 }

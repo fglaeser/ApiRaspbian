@@ -19,5 +19,17 @@ namespace ApiRaspbian.Requests
     [JsonProperty("sensor.outside_id")]
     public string SensorOutsideId { get; set; }
 
+    [JsonProperty("thermostat.target_temperature")]
+    public float TargetTemperature { get; set; }
+
+    [JsonProperty("thermostat.pin_cool")]
+    public int PinCool { get; set; }
+
+    [JsonProperty("thermostat.pin_heat")]
+    public int PinHeat { get; set; }
+
+    [JsonProperty("thermostat.diff")]
+    public float Diff { get; set; }
+
   }
 }

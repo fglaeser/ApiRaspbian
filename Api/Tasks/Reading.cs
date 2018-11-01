@@ -21,7 +21,6 @@ namespace ApiRaspbian.Tasks
     public TimeSpan? WaitTimeout => null;
 
     public string TaskName => GetType().Name;
-
     private Settings _settings;
 
     public Reading(ILogger<Reading> logger, IDataAccessRegistry dataAccessRegistry, SettingsManagement settingsMgmt)

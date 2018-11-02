@@ -43,6 +43,8 @@ namespace ApiRaspbian.Tasks
     {
       while(!token.IsCancellationRequested)
       {
+        // Wait for some reading before check
+        await Task.Delay(TimeSpan.FromMinutes(_settingsMgmt.GetSettings().PublishInterval), token);
         try
         {
           await Check();
@@ -51,12 +53,10 @@ namespace ApiRaspbian.Tasks
         {
           _logger.LogError(ex, "Exception checking temperature.");
         }
-        finally
-        {
-          await Task.Delay(TimeSpan.FromMinutes(2), token);
-        }
-
       }
+      // gracefully shutdown
+      await CoolOff();
+      await HeatOff();
     }
 
     private async Task Check()

@@ -17,7 +17,8 @@ namespace ApiRaspbian.Model.Mapping
       Map(c => c.PinCool).Column("pin_cool"); //numero de pin
       Map(c => c.PinHeat).Column("pin_heat");
       Map(c => c.Diff).Column("diff");
-
+      Map(c => c.PublishInterval).Column("publish_interval");
+      Map(c => c.ThermostatInterval).Column("thermostat_interval");
     }
   }
 }

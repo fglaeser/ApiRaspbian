@@ -44,6 +44,8 @@ namespace ApiRaspbian.Tasks
     {
       while (!token.IsCancellationRequested)
       {
+        // wait for some reading before publish
+        await Task.Delay(TimeSpan.FromMinutes(_settingsMgmt.GetSettings().PublishInterval), token);
         try
         {
           await PublishValues(token);
@@ -52,11 +54,6 @@ namespace ApiRaspbian.Tasks
         {
           _logger.LogError(ex, "Exception checking temperature.");
         }
-        finally
-        {
-          await Task.Delay(TimeSpan.FromMinutes(1), token);
-        }
-
       }
     }
 
@@ -93,7 +90,7 @@ namespace ApiRaspbian.Tasks
       request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
       await request.ExecuteAsync(cancellationToken);
 
-      var response = await service.Spreadsheets.Values.Get(spreadsheetId, "E4:E12").ExecuteAsync(cancellationToken);
+      var response = await service.Spreadsheets.Values.Get(spreadsheetId, "E4:E14").ExecuteAsync(cancellationToken);
       IList<IList<Object>> values = response.Values;
       if (values != null && values.Count > 0)
       {
@@ -108,12 +105,12 @@ namespace ApiRaspbian.Tasks
         settings.PinCool = int.Parse(values[6][0].ToString());
         settings.PinHeat = int.Parse(values[7][0].ToString());
         settings.Diff = float.Parse(values[8][0].ToString().Replace(".", CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator));
+        settings.PublishInterval = int.Parse(values[9][0].ToString());
+        settings.ThermostatInterval = int.Parse(values[10][0].ToString());
         _settingsMgmt.UpdateSettings(settings);
       }
       service.Dispose();
     }
-
-   
 
     private IEnumerable<Temperature> GetTemperatures()
     {

@@ -28,5 +28,9 @@ namespace ApiRaspbian.Model
 
     public float Diff { get; set; }
     #endregion
+
+    public int PublishInterval { get; set; }
+
+    public int ThermostatInterval { get; set; }
   }
 }

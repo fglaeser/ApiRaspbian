@@ -12,31 +12,25 @@ using Unosquare.RaspberryIO.Gpio;
 
 namespace ApiRaspbian.Tasks
 {
-  public enum Mode
-  {
-    Idle = 0,
-    Cool,
-    Heat
-
-  }
   public class Thermostat : ITaskObject
   {
-    ILogger<Thermostat> _logger;
-    SettingsManagement _settingsMgmt;
-    IDataAccessRegistry _dataAccessRegistry;
+    readonly ILogger<Thermostat> _logger;
+    readonly SettingsManagement _settingsMgmt;
+    readonly IDataAccessRegistry _dataAccessRegistry;
+    readonly ThermostatManagement _thermostatMgmt;
+
     public TimeSpan? WaitTimeout => null;
 
     public string TaskName => GetType().Name;
 
-    public Mode CurrentMode { get; set; }
- 
     public IDataAccess DataAccess => _dataAccessRegistry.GetDataAccess();
 
-    public Thermostat(ILogger<Thermostat> logger, SettingsManagement settingsMgmt, IDataAccessRegistry dataAccessRegistry)
+    public Thermostat(ILogger<Thermostat> logger, SettingsManagement settingsMgmt, IDataAccessRegistry dataAccessRegistry, ThermostatManagement thermostatMgmt)
     {
       _logger = logger;
       _settingsMgmt = settingsMgmt;
       _dataAccessRegistry = dataAccessRegistry;
+      _thermostatMgmt = thermostatMgmt;
     }
 
     public async Task StartAsync(CancellationToken token)
@@ -64,8 +58,8 @@ namespace ApiRaspbian.Tasks
       var temp = GetLastTemperature().Outside;
       var target = _settingsMgmt.GetSettings().TargetTemperature;
       var diff = _settingsMgmt.GetSettings().Diff;
-      _logger.LogInformation("Checking Temp. Current Mode {0}. Temp {1} - Target {2} - Diff {3}", CurrentMode.ToString(), temp, target, diff);
-      switch (CurrentMode)
+      _logger.LogInformation("Checking Temp. Current Mode {0}. Temp {1} - Target {2} - Diff {3}", _thermostatMgmt.CurrentMode.ToString(), temp, target, diff);
+      switch (_thermostatMgmt.CurrentMode)
       {
         case Mode.Idle:
           await CheckIdle(temp, target, diff);
@@ -114,28 +108,28 @@ namespace ApiRaspbian.Tasks
     private async Task CoolOn()
     {
       _logger.LogInformation("Setting Cool ON");
-      CurrentMode = Mode.Cool;
+      _thermostatMgmt.CurrentMode = Mode.Cool;
       await WritePin(_settingsMgmt.GetSettings().PinCool, true);
     }
 
     private async Task CoolOff()
     {
       _logger.LogInformation("Setting Cool OFF");
-      CurrentMode = Mode.Idle;
+      _thermostatMgmt.CurrentMode = Mode.Idle;
       await WritePin(_settingsMgmt.GetSettings().PinCool, false);
     }
 
     private async Task HeatOn()
     {
       _logger.LogInformation("Setting Heat ON");
-      CurrentMode = Mode.Heat;
+      _thermostatMgmt.CurrentMode = Mode.Heat;
       await WritePin(_settingsMgmt.GetSettings().PinHeat, true);
     }
 
     private async Task HeatOff()
     {
       _logger.LogInformation("Setting Heat OFF");
-      CurrentMode = Mode.Idle;
+      _thermostatMgmt.CurrentMode = Mode.Idle;
       await WritePin(_settingsMgmt.GetSettings().PinHeat, false);
     }
 

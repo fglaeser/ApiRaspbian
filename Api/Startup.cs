@@ -19,6 +19,7 @@ namespace ApiRaspbian
         c.AddSingleton<ITaskObject, SheetPublisher>();
         c.AddSingleton<IDataAccessRegistry, DataAccessRegistry>();
         c.AddSingleton<SettingsManagement>();
+        c.AddSingleton<ThermostatManagement>();
         c.Configure<DataAccessRegistryOptions>(ctx.Configuration.GetSection("DataAccessRegistry"));
       });
     }

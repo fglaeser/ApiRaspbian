@@ -24,6 +24,7 @@ namespace ApiRaspbian.Tasks
     readonly ILogger<SheetPublisher> _logger;
     readonly SettingsManagement _settingsMgmt;
     readonly IDataAccessRegistry _dataAccessRegistry;
+    readonly ThermostatManagement _thermostatMgmt;
     static string[] Scopes = { SheetsService.Scope.Spreadsheets };
     static string ApplicationName = "Google Sheets API .NET Quickstart";
 
@@ -33,11 +34,12 @@ namespace ApiRaspbian.Tasks
 
     public IDataAccess DataAccess => _dataAccessRegistry.GetDataAccess();
 
-    public SheetPublisher(ILogger<SheetPublisher> logger, SettingsManagement settingsMgmt, IDataAccessRegistry dataAccessRegistry)
+    public SheetPublisher(ILogger<SheetPublisher> logger, SettingsManagement settingsMgmt, IDataAccessRegistry dataAccessRegistry, ThermostatManagement thermostatMgmt)
     {
       _logger = logger;
       _settingsMgmt = settingsMgmt;
       _dataAccessRegistry = dataAccessRegistry;
+      _thermostatMgmt = thermostatMgmt;
     }
 
     public async Task StartAsync(CancellationToken token)
@@ -81,6 +83,7 @@ namespace ApiRaspbian.Tasks
         ApplicationName = ApplicationName,
       });
       string spreadsheetId = "1RCRFRNucJB-fs4jyhIlPMfHnMOIv7xx81h1oeZx0j-g";
+      // Temperatures
       ValueRange valueRange = new ValueRange { Values = new List<IList<object>>() };
       foreach(var temp in temperatures)
       {
@@ -89,7 +92,7 @@ namespace ApiRaspbian.Tasks
       var request = service.Spreadsheets.Values.Update(valueRange, spreadsheetId, "A1:C10");
       request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
       await request.ExecuteAsync(cancellationToken);
-
+      // Settings
       var response = await service.Spreadsheets.Values.Get(spreadsheetId, "E4:E14").ExecuteAsync(cancellationToken);
       IList<IList<Object>> values = response.Values;
       if (values != null && values.Count > 0)
@@ -109,6 +112,27 @@ namespace ApiRaspbian.Tasks
         settings.ThermostatInterval = int.Parse(values[10][0].ToString());
         _settingsMgmt.UpdateSettings(settings);
       }
+
+      // ON-OFF
+      ValueRange valueOnOff = new ValueRange { Values = new List<IList<object>>() };
+      switch(_thermostatMgmt.CurrentMode)
+      {
+        case Mode.Cool:
+          valueOnOff.Values.Add(new List<object> { "ON" });
+          valueOnOff.Values.Add(new List<object> { "OFF" });
+          break;
+        case Mode.Heat:
+          valueOnOff.Values.Add(new List<object> { "OFF" });
+          valueOnOff.Values.Add(new List<object> { "ON" });
+          break;
+        default:
+          valueOnOff.Values.Add(new List<object> { "OFF" });
+          valueOnOff.Values.Add(new List<object> { "OFF" });
+          break;
+      }
+      request = service.Spreadsheets.Values.Update(valueOnOff, spreadsheetId, "G1:2");
+      request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
+      await request.ExecuteAsync(cancellationToken);
       service.Dispose();
     }
 

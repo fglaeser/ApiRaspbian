@@ -288,3 +288,4 @@ __pycache__/
 *.xsd.cs
 
 Api/Logs/
+.DS_Store

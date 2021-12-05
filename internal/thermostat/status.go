@@ -29,13 +29,13 @@ func Run(pinCool uint8, pinHeat uint8, temp float64, target float64, diff float6
 	switch mode {
 	case Idle:
 		fmt.Println("Thermostat in Idle Mode")
-		checkIdle(temp, target, diff, pinCool, pinHeat)
+		mode = checkIdle(temp, target, diff, pinCool, pinHeat)
 	case Cool:
 		fmt.Println("Thermostat in Cool Mode")
-		checkCool(temp, target, diff, pinCool)
+		mode = checkCool(temp, target, diff, pinCool)
 	case Heat:
 		fmt.Println("Thermostat in Heat Mode")
-		checkHeat(temp, target, diff, pinHeat)
+		mode = checkHeat(temp, target, diff, pinHeat)
 	}
 	return mode, nil
 }
@@ -50,30 +50,36 @@ func getMode(cool int, heat int) Mode {
 	return Heat
 }
 
-func checkIdle(temp float64, target float64, diff float64, pinCool uint8, pinHeat uint8) {
+func checkIdle(temp float64, target float64, diff float64, pinCool uint8, pinHeat uint8) Mode {
 	if temp >= (target + diff) {
 		fmt.Println("Thermostat goes from Idle Mode -> Cool Mode")
 		pinOn(pinCool)
-		return
+		return Cool
 	}
 	if temp <= (target - diff) {
 		fmt.Println("Thermostat goes from Idle Mode -> Heat Mode")
 		pinOn(pinHeat)
+		return Heat
 	}
+	return Idle
 }
 
-func checkCool(temp float64, target float64, diff float64, pinCool uint8) {
+func checkCool(temp float64, target float64, diff float64, pinCool uint8) Mode {
 	if temp <= target {
 		fmt.Println("Thermostat goes from Cool Mode -> Idle Mode")
 		pinOff(pinCool)
+		return Idle
 	}
+	return Cool
 }
 
-func checkHeat(temp float64, target float64, diff float64, pinHeat uint8) {
+func checkHeat(temp float64, target float64, diff float64, pinHeat uint8) Mode {
 	if temp >= target {
 		fmt.Println("Thermostat goes from Heat Mode -> Idle Mode")
 		pinOff(pinHeat)
+		return Idle
 	}
+	return Heat
 }
 
 func pinOn(number uint8) error {
